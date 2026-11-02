@@ -47,9 +47,11 @@ config.example.json  example of optional config.json (pin display
 - `provision-tapo-mcp.sh` runs the standard layout:
   ```
   docker run -d --name tapo-mcp --network host --restart unless-stopped \
-    -e TAPO_MCP_USERNAME=<tapo user> -e TAPO_MCP_PASSWORD=*** pass> \
+    -e TAPO_MCP_USERNAME=<tapo user> \
+    -e TAPO_MCP_PASSWORD=*** pass> \
     -e TAPO_MCP_DISCOVERY_TARGET=<broadcast of the plug's subnet> \
-    -e TAPO_MCP_API_KEY=*** generated> -e TAPO_MCP_ALLOWED_HOSTS=127.0.0.1,localhost \
+    -e TAPO_MCP_API_KEY=*** generated> \
+    -e TAPO_MCP_ALLOWED_HOSTS=127.0.0.1,localhost \
     ghcr.io/mihai-dinculescu/tapo-mcp:latest
   ```
   If a `tapo-mcp` container already exists it is left as-is (started
