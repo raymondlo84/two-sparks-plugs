@@ -1,0 +1,7 @@
+# Secrets — never commit the real creds file
+tapo-mcp.env
+
+# Local state
+*.log
+__pycache__/
+*.pyc
