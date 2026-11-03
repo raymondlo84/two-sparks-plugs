@@ -188,29 +188,44 @@ def collect_data():
     devices = listing.get("devices", [])
     ip_by_id = {d["id"]: d.get("ip") for d in devices}
 
+    # {device_id: display_name}; empty means pure auto-discovery
     cfg = parse_plugs_config()
-    wanted = []
-    for name, did in cfg.items():
-        if did in ip_by_id:
-            wanted.append((name, did))
-    if not wanted:
-        for d in devices:
-            if d.get("model") in ENERGY_MODELS:
-                name = cfg.get(d["id"], d.get("name") or d.get("model") or d["id"])
-                wanted.append((name, d["id"]))
-    if not wanted:
-        raise RuntimeError(
-            "no energy-monitoring plugs (P110/P110M/P115) found via tapo-mcp; "
-            "check that tapo-mcp discovery sees your network "
-            "(TAPO_MCP_DISCOVERY_TARGET must be a broadcast address on the "
-            "plug's subnet)")
 
     now = datetime.now(timezone.utc)
     tz_offset_min = round((datetime.now().replace(tzinfo=None) -
                            now.replace(tzinfo=None)).total_seconds() / 60)
 
-    plugs = [read_plug(mcp, name, did, ip_by_id.get(did), now, tz_offset_min)
-             for name, did in wanted]
+    plugs = []
+    if cfg:
+        # Explicit pin: show exactly these devices, in config order.
+        for did, name in cfg.items():
+            if did in ip_by_id:
+                plugs.append(read_plug(mcp, name, did, ip_by_id.get(did),
+                                       now, tz_offset_min))
+            else:
+                plugs.append({
+                    "name": name, "id": did, "ip": None,
+                    "error": "not visible in tapo-mcp discovery "
+                             "(wrong id, or tapo-mcp discovery target is on "
+                             "the wrong subnet)",
+                    "power": [], "energy_pairs": [], "today_wh": 0,
+                    "on": None, "on_time": 0,
+                })
+    else:
+        wanted = []
+        for d in devices:
+            if d.get("model") in ENERGY_MODELS:
+                name = d.get("name") or d.get("model") or d["id"]
+                wanted.append((name, d["id"]))
+        if not wanted:
+            raise RuntimeError(
+                "no energy-monitoring plugs (P110/P110M/P115) found via "
+                "tapo-mcp; check that tapo-mcp discovery sees your network "
+                "(TAPO_MCP_DISCOVERY_TARGET must be a broadcast address on "
+                "the plug's subnet)")
+        plugs = [read_plug(mcp, name, did, ip_by_id.get(did), now,
+                           tz_offset_min)
+                 for name, did in wanted]
 
     if all(p["error"] for p in plugs):
         raise RuntimeError("all plugs failed: " + plugs[0]["error"])
