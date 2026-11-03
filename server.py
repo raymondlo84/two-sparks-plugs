@@ -116,7 +116,7 @@ footer{font-size:11px;color:#777;display:flex;justify-content:space-between;flex
 </div>
 <script>
 function el(id){return document.getElementById(id);}
-function esc(s){s=String(s);var o='';for(var i=0;i<s.length;i++){var c=s.charAt(i);if(c==='&'){o+='&amp;';}else if(c==='<'){o+='&lt;';}else if(c==='>'){o+='&gt;';}else if(c==='"'){o+='&quot;';}else if(c==='\''){o+='&#39;';}else{o+=c;}}return o;}
+function esc(s){s=String(s);var o='';for(var i=0;i<s.length;i++){var c=s.charAt(i);if(c==='&'){o+='&amp;';}else if(c==='<'){o+='&lt;';}else if(c==='>'){o+='&gt;';}else if(c==='"'){o+='&quot;';}else if(c===String.fromCharCode(39)){o+='&#39;';}else{o+=c;}}return o;}
 function ts(ms){var d=new Date(ms);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 var COLORS=__COLORS__;
 function legend(id,items){
